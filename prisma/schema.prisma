@@ -1,0 +1,38 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+model User {
+  id             String   @id @default(cuid())
+  username       String   @unique
+  walletId       String   @unique
+  receiveAddress String
+  spendPubKey    String
+  viewPubKey     String
+  viewPrivKey    String
+  createdAt      DateTime @default(now())
+
+  sentTxns     Transaction[] @relation("sender")
+  receivedTxns Transaction[] @relation("receiver")
+}
+
+model Transaction {
+  id              String   @id @default(cuid())
+  txHash          String?
+  senderId        String
+  receiverId      String
+  stealthAddress  String
+  ephemeralPubKey String   @default("")
+  amountUsdc      String
+  amountBase      String
+  status          String   @default("pending")
+  createdAt       DateTime @default(now())
+
+  sender   User @relation("sender", fields: [senderId], references: [id])
+  receiver User @relation("receiver", fields: [receiverId], references: [id])
+}
